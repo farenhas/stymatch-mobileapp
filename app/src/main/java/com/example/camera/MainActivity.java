@@ -152,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
             CaptureRequest.Builder captureBuilder =
                     cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
             captureBuilder.addTarget(imageReader.getSurface());
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 0);
             session.capture(captureBuilder.build(), null, null);
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -169,8 +170,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+
+        android.graphics.Matrix matrix = new android.graphics.Matrix();
+        matrix.postRotate(90);
+        Bitmap rotatedBmp = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+
         runOnUiThread(() -> {
-            imageView.setImageBitmap(bmp);
+            imageView.setImageBitmap(rotatedBmp);
             imageView.setVisibility(View.VISIBLE);
             btnRetake.setVisibility(View.VISIBLE);
             btnCapture.setVisibility(View.GONE);
