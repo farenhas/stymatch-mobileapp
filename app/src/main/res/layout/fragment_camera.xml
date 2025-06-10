@@ -1,33 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/cameraFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Live camera preview -->
     <TextureView
         android:id="@+id/textureView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- Captured image display -->
     <ImageView
         android:id="@+id/imageView"
-        android:visibility="gone"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="fitCenter" />
+        android:scaleType="fitCenter"
+        android:visibility="gone" />
 
+    <!-- Capture button -->
     <Button
         android:id="@+id/btnCapture"
-        android:text="Capture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Capture"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="16dp" />
+        android:layout_marginBottom="24dp" />
 
+    <!-- Retake button -->
     <Button
         android:id="@+id/btnRetake"
-        android:text="Retake"
-        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="Retake"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="16dp" />
+        android:layout_marginBottom="24dp"
+        android:visibility="gone" />
+
+    <!-- Result card -->
+    <LinearLayout
+        android:id="@+id/cardResult"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="100dp"
+        android:background="@android:color/white"
+        android:elevation="8dp"
+        android:visibility="gone"
+        android:layout_margin="16dp">
+
+        <TextView
+            android:id="@+id/txtResult"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Face shape result"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+
 </FrameLayout>

@@ -2,26 +2,31 @@ package com.example.camera;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.*;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.*;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
-import android.os.Environment;
-import android.util.Size;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.util.Base64;
+import android.util.Log;
 import android.view.*;
-import android.widget.Button;
-import android.widget.ImageView;
-
+import android.widget.*;
+import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
-import java.io.File;
-import java.io.FileOutputStream;
+import okhttp3.*;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -30,176 +35,229 @@ public class CameraFragment extends Fragment {
     private TextureView textureView;
     private ImageView imageView;
     private Button btnCapture, btnRetake;
+    private TextView txtResult;
+    private LinearLayout cardResult;
+
     private CameraDevice cameraDevice;
     private CameraCaptureSession session;
     private ImageReader imageReader;
+    private Handler bgHandler;
+    private HandlerThread bgThread;
 
-    private final int REQUEST_CAMERA = 200;
+    private static final int REQ_CAM = 200;
+    private static final String ROBOFLOW_URL =
+            "https://serverless.roboflow.com/faceline/2?api_key=g56k2DYQMopGLEWYqp9w";
 
-    public CameraFragment() {}
+    private final OkHttpClient http = new OkHttpClient();
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_camera, container, false);
+    public View onCreateView(@NonNull LayoutInflater inf, ViewGroup parent, Bundle st) {
+        View v = inf.inflate(R.layout.fragment_camera, parent, false);
+        textureView = v.findViewById(R.id.textureView);
+        imageView = v.findViewById(R.id.imageView);
+        btnCapture = v.findViewById(R.id.btnCapture);
+        btnRetake = v.findViewById(R.id.btnRetake);
+        txtResult = v.findViewById(R.id.txtResult);
+        cardResult = v.findViewById(R.id.cardResult);
 
-        textureView  = view.findViewById(R.id.textureView);
-        imageView    = view.findViewById(R.id.imageView);
-        btnCapture   = view.findViewById(R.id.btnCapture);
-        btnRetake    = view.findViewById(R.id.btnRetake);
+        textureView.setSurfaceTextureListener(texListener);
+        btnCapture.setOnClickListener(vi -> takePhoto());
+        btnRetake.setOnClickListener(vi -> retake());
 
-        textureView.setSurfaceTextureListener(surfaceListener);
-
-        btnCapture.setOnClickListener(v -> takePhoto());
-        btnRetake.setOnClickListener(v -> retakePhoto());
-
-        return view;
+        return v;
     }
 
-    private final TextureView.SurfaceTextureListener surfaceListener =
-            new TextureView.SurfaceTextureListener() {
-                @Override public void onSurfaceTextureAvailable(SurfaceTexture st, int w, int h) {
-                    if (checkCameraPermissions()) openCamera();
-                    else requestCameraPermissions();
-                }
-                @Override public void onSurfaceTextureSizeChanged(SurfaceTexture st, int w, int h) {}
-                @Override public boolean onSurfaceTextureDestroyed(SurfaceTexture st) { return true; }
-                @Override public void onSurfaceTextureUpdated(SurfaceTexture st) {}
-            };
-
-    private boolean checkCameraPermissions() {
-        return ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+    @Override
+    public void onResume() {
+        super.onResume();
+        startBackgroundThread();
     }
 
-    private void requestCameraPermissions() {
-        requestPermissions(
-                new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                REQUEST_CAMERA);
+    @Override
+    public void onPause() {
+        stopBackgroundThread();
+        super.onPause();
+    }
+
+    private void startBackgroundThread() {
+        bgThread = new HandlerThread("CamBg");
+        bgThread.start();
+        bgHandler = new Handler(bgThread.getLooper());
+    }
+
+    private void stopBackgroundThread() {
+        if (bgThread != null) {
+            bgThread.quitSafely();
+            try {
+                bgThread.join();
+                bgThread = null;
+                bgHandler = null;
+            } catch (InterruptedException ignored) {}
+        }
+    }
+
+    private final TextureView.SurfaceTextureListener texListener = new TextureView.SurfaceTextureListener() {
+        @Override public void onSurfaceTextureAvailable(@NonNull SurfaceTexture st, int w, int h) {
+            if (hasCamPerm()) openCamera();
+            else reqCamPerm();
+        }
+        @Override public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture st, int w, int h) {}
+        @Override public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture st) { return true; }
+        @Override public void onSurfaceTextureUpdated(@NonNull SurfaceTexture st) {}
+    };
+
+    private boolean hasCamPerm() {
+        return ActivityCompat.checkSelfPermission(requireContext(),
+                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void reqCamPerm() {
+        requestPermissions(new String[]{Manifest.permission.CAMERA}, REQ_CAM);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int code, @NonNull String[] p, @NonNull int[] r) {
+        if (code == REQ_CAM && r.length > 0 && r[0] == PackageManager.PERMISSION_GRANTED)
+            if (textureView.isAvailable()) openCamera();
     }
 
     private void openCamera() {
-        CameraManager manager = (CameraManager) getActivity().getSystemService(getContext().CAMERA_SERVICE);
         try {
-            String cameraId = manager.getCameraIdList()[0];
+            CameraManager mgr = requireActivity().getSystemService(CameraManager.class);
+            String camId = mgr.getCameraIdList()[0];
 
-            imageReader = ImageReader.newInstance(640, 480, ImageFormat.JPEG, 1);
+            imageReader = ImageReader.newInstance(640, 480, ImageFormat.JPEG, 2);
             imageReader.setOnImageAvailableListener(reader -> {
-                Image image = reader.acquireLatestImage();
-                ByteBuffer buffer = image.getPlanes()[0].getBuffer();
-                byte[] bytes = new byte[buffer.remaining()];
-                buffer.get(bytes);
-                image.close();
-                saveAndShowImage(bytes);
-            }, null);
+                Image img = null;
+                try {
+                    img = reader.acquireLatestImage();
+                    if (img == null) return;
+                    ByteBuffer buf = img.getPlanes()[0].getBuffer();
+                    byte[] data = new byte[buf.remaining()];
+                    buf.get(data);
+                    processImage(data);
+                } finally {
+                    if (img != null) img.close();
+                }
+            }, bgHandler);
 
-            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)
-                return;
-
-            manager.openCamera(cameraId, stateCallback, null);
-
-        } catch (CameraAccessException e) {
+            if (!hasCamPerm()) return;
+            mgr.openCamera(camId, camCB, bgHandler);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private final CameraDevice.StateCallback stateCallback = new CameraDevice.StateCallback() {
-        @Override public void onOpened(@NonNull CameraDevice camera) {
-            cameraDevice = camera;
-            startPreview();
-        }
-        @Override public void onDisconnected(@NonNull CameraDevice camera) {
-            camera.close();
-        }
-        @Override public void onError(@NonNull CameraDevice camera, int error) {
-            camera.close();
-        }
+    private final CameraDevice.StateCallback camCB = new CameraDevice.StateCallback() {
+        @Override public void onOpened(@NonNull CameraDevice cam) { cameraDevice = cam; startPreview(); }
+        @Override public void onDisconnected(@NonNull CameraDevice cam) { cam.close(); }
+        @Override public void onError(@NonNull CameraDevice cam, int err) { cam.close(); }
     };
 
     private void startPreview() {
         try {
             SurfaceTexture st = textureView.getSurfaceTexture();
-            Surface surface = new Surface(st);
+            st.setDefaultBufferSize(640, 480);
+            Surface surf = new Surface(st);
 
-            CaptureRequest.Builder previewBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-            previewBuilder.addTarget(surface);
+            CaptureRequest.Builder pb = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+            pb.addTarget(surf);
 
-            cameraDevice.createCaptureSession(Arrays.asList(surface, imageReader.getSurface()),
+            cameraDevice.createCaptureSession(
+                    Arrays.asList(surf, imageReader.getSurface()),
                     new CameraCaptureSession.StateCallback() {
-                        @Override public void onConfigured(@NonNull CameraCaptureSession camSession) {
-                            session = camSession;
-                            try {
-                                session.setRepeatingRequest(previewBuilder.build(), null, null);
-                            } catch (CameraAccessException e) {
-                                e.printStackTrace();
-                            }
+                        @Override public void onConfigured(@NonNull CameraCaptureSession s) {
+                            session = s;
+                            try { s.setRepeatingRequest(pb.build(), null, bgHandler); }
+                            catch (CameraAccessException e) { e.printStackTrace(); }
                         }
-                        @Override public void onConfigureFailed(@NonNull CameraCaptureSession camSession) {}
-                    }, null);
+                        @Override public void onConfigureFailed(@NonNull CameraCaptureSession s) {}
+                    }, bgHandler);
 
-        } catch (CameraAccessException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void takePhoto() {
         try {
-            CaptureRequest.Builder captureBuilder =
-                    cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
-            captureBuilder.addTarget(imageReader.getSurface());
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, 0);
-            session.capture(captureBuilder.build(), null, null);
-        } catch (CameraAccessException e) {
+            CaptureRequest.Builder cb = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE);
+            cb.addTarget(imageReader.getSurface());
+            cb.set(CaptureRequest.JPEG_ORIENTATION, 90);
+            session.capture(cb.build(), null, bgHandler);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void saveAndShowImage(byte[] bytes) {
-        File dir = new File(Environment.getExternalStorageDirectory() + "/DCIM/Camera/");
-        if (!dir.exists()) dir.mkdirs();
-        File file = new File(dir, "IMG_" + System.currentTimeMillis() + ".jpg");
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            out.write(bytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private void processImage(byte[] jpegBytes) {
+        Bitmap bmp = BitmapFactory.decodeByteArray(jpegBytes, 0, jpegBytes.length);
+        Matrix m = new Matrix();
+        m.postRotate(90);
+        Bitmap rot = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), m, true);
 
-        Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        android.graphics.Matrix matrix = new android.graphics.Matrix();
-        matrix.postRotate(90);
-        Bitmap rotatedBmp = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        rot.compress(Bitmap.CompressFormat.JPEG, 90, baos);
+        byte[] finalBytes = baos.toByteArray();
 
-        getActivity().runOnUiThread(() -> {
-            imageView.setImageBitmap(rotatedBmp);
+        requireActivity().runOnUiThread(() -> {
+            imageView.setImageBitmap(rot);
             imageView.setVisibility(View.VISIBLE);
             btnRetake.setVisibility(View.VISIBLE);
             btnCapture.setVisibility(View.GONE);
             textureView.setVisibility(View.GONE);
+            cardResult.setVisibility(View.GONE);
+        });
+
+        sendToRoboflow(finalBytes);
+    }
+
+    private void sendToRoboflow(byte[] jpegBytes) {
+        String b64 = Base64.encodeToString(jpegBytes, Base64.NO_WRAP);
+
+        Request req = new Request.Builder()
+                .url(ROBOFLOW_URL + "&name=capture.jpg")
+                .post(RequestBody.create(b64, MediaType.get("application/x-www-form-urlencoded")))
+                .build();
+
+        http.newCall(req).enqueue(new Callback() {
+            @Override public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                requireActivity().runOnUiThread(() ->
+                        Toast.makeText(getContext(), "Failed to call Roboflow", Toast.LENGTH_SHORT).show());
+            }
+
+            @Override public void onResponse(@NonNull Call call, @NonNull Response res) throws IOException {
+                String resp = res.body() != null ? res.body().string() : "empty";
+                Log.d("ROBOFLOW", resp);
+
+                requireActivity().runOnUiThread(() -> {
+                    try {
+                        JSONObject json = new JSONObject(resp);
+                        JSONArray preds = json.getJSONArray("predictions");
+                        if (preds.length() > 0) {
+                            String className = preds.getJSONObject(0).getString("class");
+                            txtResult.setText("\uD83D\uDC69 Face shape: " + className +
+                                    "\n\uD83D\uDC53 Click here to go further for " + className +
+                                    "\n\nFull JSON:\n" + json.toString(2));
+                        } else {
+                            txtResult.setText("\u26A0\uFE0F No face shape detected.\n\nFull JSON:\n" + json.toString(2));
+                        }
+                    } catch (Exception e) {
+                        txtResult.setText("Failed to parse result.");
+                        e.printStackTrace();
+                    }
+                    cardResult.setVisibility(View.VISIBLE);
+                });
+            }
         });
     }
 
-    private void retakePhoto() {
+    private void retake() {
         imageView.setVisibility(View.GONE);
         btnRetake.setVisibility(View.GONE);
         btnCapture.setVisibility(View.VISIBLE);
         textureView.setVisibility(View.VISIBLE);
+        cardResult.setVisibility(View.GONE);
         startPreview();
-    }
-
-    @Override
-    public void onDestroy() {
-        if (cameraDevice != null) cameraDevice.close();
-        super.onDestroy();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CAMERA &&
-                grantResults.length > 0 &&
-                grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            if (textureView.isAvailable()) openCamera();
-        }
     }
 }
