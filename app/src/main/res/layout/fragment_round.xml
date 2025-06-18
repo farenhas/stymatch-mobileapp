@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Judul -->
+        <TextView
+            android:id="@+id/titleEgg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Face Shape: Round"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:paddingBottom="16dp"/>
+
+        <!-- Gaya Rambut Rekomendasi -->
+        <TextView
+            android:id="@+id/hairTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Recommended Hairstyles:"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:paddingTop="8dp"/>
+
+        <TextView
+            android:id="@+id/hairDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="- Layered cuts\n- Side-swept bangs\n- Waves or curls to soften angles"
+            android:paddingBottom="16dp"/>
+
+        <!-- Kacamata Rekomendasi -->
+        <TextView
+            android:id="@+id/glassesTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Recommended Glasses:"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:paddingTop="8dp"/>
+
+        <TextView
+            android:id="@+id/glassesDesc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="- Round or oval frames\n- Cat-eye glasses\n- Avoid square frames"
+            android:paddingBottom="16dp"/>
+
+
+
+    </LinearLayout>
+</ScrollView>
