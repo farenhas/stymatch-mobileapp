@@ -1,47 +1,159 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
+    android:background="#F4D7DA"
+    android:fillViewport="true">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center">
+        android:padding="48dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="48dp">
+
+            <TextView
+                android:text="Find your style,"
+                android:textSize="19sp"
+                android:textColor="#333333"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-light"
+                android:letterSpacing="0.03"
+                android:textStyle="italic"/>
+
+            <TextView
+                android:text="Find You"
+                android:textSize="40sp"
+                android:textColor="#333333"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-condensed"
+                android:letterSpacing="0.05"/>
+        </LinearLayout>
 
         <TextView
-            android:text="Home Page"
-            android:textSize="24sp"
-            android:layout_marginBottom="24dp"
+            android:text="Discover your face shape and get personalized beauty recommendations"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="32dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"/>
 
-        <Button
-            android:id="@+id/btnSquare"
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Go to Square"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp">
 
-        <Button
-            android:id="@+id/btnEgg"
+            <FrameLayout
+                android:id="@+id/btnSquare"
+                android:layout_width="0dp"
+                android:layout_height="220dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/card_background"
+                android:foreground="?attr/selectableItemBackground"
+                android:elevation="8dp"
+                android:translationZ="4dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/square"
+                    android:adjustViewBounds="true"
+                    android:padding="8dp"
+                    android:contentDescription="Square face shape example"/>
+
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/btnEgg"
+                android:layout_width="0dp"
+                android:layout_height="220dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/card_background"
+                android:foreground="?attr/selectableItemBackground"
+                android:elevation="8dp"
+                android:translationZ="4dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/egg"
+                    android:adjustViewBounds="true"
+                    android:padding="8dp"
+                    android:contentDescription="Oval face shape example"/>
+
+            </FrameLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Go to Egg"
-            android:layout_marginBottom="16dp"/>
+            android:layout_height="wrap_content">
 
-        <Button
-            android:id="@+id/btnRound"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Go to Round"
-            android:layout_marginBottom="16dp"/>
+            <FrameLayout
+                android:id="@+id/btnRound"
+                android:layout_width="0dp"
+                android:layout_height="220dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/card_background"
+                android:foreground="?attr/selectableItemBackground"
+                android:elevation="8dp"
+                android:translationZ="4dp"
+                android:clickable="true"
+                android:focusable="true">
 
-        <Button
-            android:id="@+id/btnHeart"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Go to Heart"/>
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/round"
+                    android:adjustViewBounds="true"
+                    android:padding="8dp"
+                    android:contentDescription="Round face shape example"/>
 
+            </FrameLayout>
+
+            <FrameLayout
+                android:id="@+id/btnHeart"
+                android:layout_width="0dp"
+                android:layout_height="220dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/card_background"
+                android:foreground="?attr/selectableItemBackground"
+                android:elevation="8dp"
+                android:translationZ="4dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/heart"
+                    android:adjustViewBounds="true"
+                    android:padding="8dp"
+                    android:contentDescription="Heart face shape example"/>
+
+            </FrameLayout>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>
