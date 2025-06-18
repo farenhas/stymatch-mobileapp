@@ -60,6 +60,13 @@
             android:textColor="@android:color/black"
             android:textStyle="bold" />
 
+        <Button
+            android:id="@+id/btnGotoShape"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Go to Recommendation"
+            android:visibility="gone"/>
+
     </LinearLayout>
 
 

@@ -34,7 +34,7 @@ public class CameraFragment extends Fragment {
 
     private TextureView textureView;
     private ImageView imageView;
-    private Button btnCapture, btnRetake;
+    private Button btnCapture, btnRetake, btnGotoShape;
     private TextView txtResult;
     private LinearLayout cardResult;
 
@@ -52,7 +52,9 @@ public class CameraFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inf, ViewGroup parent, Bundle st) {
+
         View v = inf.inflate(R.layout.fragment_camera, parent, false);
+        btnGotoShape = v.findViewById(R.id.btnGotoShape);
         textureView = v.findViewById(R.id.textureView);
         imageView = v.findViewById(R.id.imageView);
         btnCapture = v.findViewById(R.id.btnCapture);
@@ -236,11 +238,15 @@ public class CameraFragment extends Fragment {
                         JSONArray preds = json.getJSONArray("predictions");
                         if (preds.length() > 0) {
                             String className = preds.getJSONObject(0).getString("class");
-                            txtResult.setText("\uD83D\uDC69 Face shape: " + className +
-                                    "\n\uD83D\uDC53 Click here to go further for " + className +
-                                    "\n\nFull JSON:\n" + json.toString(2));
+                            double confidence = preds.getJSONObject(0).getDouble("confidence");
+                            txtResult.setText("Face Shape: " + className + "\nConfidence: " + String.format("%.2f", confidence));
+
+                            // tampilkan tombol ke fragment shape
+                            btnGotoShape.setVisibility(View.VISIBLE);
+                            btnGotoShape.setText("See recommendation for " + className);
+                            btnGotoShape.setOnClickListener(view -> goToPage(className));
                         } else {
-                            txtResult.setText("\u26A0\uFE0F No face shape detected.\n\nFull JSON:\n" + json.toString(2));
+                            txtResult.setText("⚠️ No face shape detected.");
                         }
                     } catch (Exception e) {
                         txtResult.setText("Failed to parse result.");
@@ -259,5 +265,27 @@ public class CameraFragment extends Fragment {
         textureView.setVisibility(View.VISIBLE);
         cardResult.setVisibility(View.GONE);
         startPreview();
+    }
+
+    private void goToPage(String shape) {
+        Fragment fragment = null;
+        switch (shape.toLowerCase()) {
+            case "square":
+                fragment = new SquareFragment();
+                break;
+            case "egg":
+//                fragment = new EggFragment();
+                break;
+        }
+
+        if (fragment != null) {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        } else {
+            Toast.makeText(getContext(), "No page for shape: " + shape, Toast.LENGTH_SHORT).show();
+        }
     }
 }
