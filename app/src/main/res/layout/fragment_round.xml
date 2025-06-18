@@ -1,60 +1,171 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:orientation="vertical"
+    android:background="#F8E8E8">
 
+    <!-- Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:background="#F0D0D0">
 
-        <!-- Judul -->
         <TextView
-            android:id="@+id/titleEgg"
+            android:id="@+id/titleRound"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Face Shape: Round"
-            android:textSize="24sp"
+            android:textSize="28sp"
             android:textStyle="bold"
+            android:textColor="#333333"
             android:gravity="center"
-            android:paddingBottom="16dp"/>
-
-        <!-- Gaya Rambut Rekomendasi -->
-        <TextView
-            android:id="@+id/hairTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Recommended Hairstyles:"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingTop="8dp"/>
+            android:paddingBottom="8dp"/>
 
         <TextView
-            android:id="@+id/hairDesc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="- Layered cuts\n- Side-swept bangs\n- Waves or curls to soften angles"
-            android:paddingBottom="16dp"/>
-
-        <!-- Kacamata Rekomendasi -->
-        <TextView
-            android:id="@+id/glassesTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Recommended Glasses:"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:paddingTop="8dp"/>
-
-        <TextView
-            android:id="@+id/glassesDesc"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="- Round or oval frames\n- Cat-eye glasses\n- Avoid square frames"
-            android:paddingBottom="16dp"/>
-
-
+            android:text="Personalized recommendations for your round face shape"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:gravity="center"/>
 
     </LinearLayout>
-</ScrollView>
+
+    <!-- Content Section -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Hairstyles Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/card_background"
+                android:padding="20dp"
+                android:layout_marginBottom="16dp"
+                android:elevation="4dp">
+
+                <TextView
+                    android:id="@+id/hairTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Recommended Hairstyles"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:paddingBottom="12dp"/>
+
+                <TextView
+                    android:id="@+id/hairDesc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Long hairstyles to elongate your face\n• Side-parted styles to create asymmetry\n• Layered cuts with volume at the crown\n• Angular bobs that end below the chin\n• Avoid blunt bangs and chin-length cuts"
+                    android:textSize="16sp"
+                    android:textColor="#555555"
+                    android:lineSpacingExtra="6dp"/>
+
+            </LinearLayout>
+
+            <!-- Glasses Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/card_background"
+                android:padding="20dp"
+                android:layout_marginBottom="16dp"
+                android:elevation="4dp">
+
+                <TextView
+                    android:id="@+id/glassesTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Recommended Glasses"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:paddingBottom="12dp"/>
+
+                <TextView
+                    android:id="@+id/glassesDesc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Angular or geometric frames to add definition\n• Rectangle or square frames for structure\n• Cat-eye glasses to lift and elongate\n• Wide frames that extend beyond face width\n• Avoid small or round frames"
+                    android:textSize="16sp"
+                    android:textColor="#555555"
+                    android:lineSpacingExtra="6dp"/>
+
+            </LinearLayout>
+
+            <!-- Makeup Tips Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/card_background"
+                android:padding="20dp"
+                android:layout_marginBottom="16dp"
+                android:elevation="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Makeup Tips"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:paddingBottom="12dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Contour the sides of your face to create angles\n• Highlight down the center of your face\n• Apply blush in an upward diagonal motion\n• Define your cheekbones with bronzer\n• Use vertical eye makeup techniques"
+                    android:textSize="16sp"
+                    android:textColor="#555555"
+                    android:lineSpacingExtra="6dp"/>
+
+            </LinearLayout>
+
+            <!-- Styling Tips Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/card_background"
+                android:padding="20dp"
+                android:layout_marginBottom="16dp"
+                android:elevation="4dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Styling Tips"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#333333"
+                    android:paddingBottom="12dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Choose long, dangly earrings to elongate\n• Angular or geometric jewelry works well\n• Avoid round or circular accessories\n• V-neck and scoop necklines are flattering\n• Embrace your naturally soft, youthful features"
+                    android:textSize="16sp"
+                    android:textColor="#555555"
+                    android:lineSpacingExtra="6dp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
